@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.db
+*.log
+.DS_Store
+.DS_Store?
+Thumbs.db
+# User uploads and generated embeddings are private/local state.
+data/uploads/
+data/index.sqlite3*
+data/cache/
+# Demo image files are included only when their manifest explicitly licenses them.
+build/
+dist/
+*.egg-info/

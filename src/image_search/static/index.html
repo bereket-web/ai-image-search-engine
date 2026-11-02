@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101116">
+  <meta name="description" content="Search your local image library with natural language or a reference image.">
+  <title>FrameFind — image search, by meaning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="FrameFind home">
+        <span class="brand-mark"><span></span><span></span><span></span><span></span></span>
+        <span>frame<span class="brand-light">find</span></span>
+        <span class="brand-local">LOCAL LAB</span>
+      </a>
+      <div class="topbar-right">
+        <span class="privacy-pill"><i></i> Your images stay on this machine</span>
+        <a class="api-link" href="/docs" target="_blank" rel="noreferrer">API <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> A visual search instrument</div>
+          <h1>Find the image<br>you <em>mean.</em></h1>
+          <p class="hero-subtitle">Search with a sentence or a picture. FrameFind reads the visual idea, not just the filename.</p>
+          <div class="hero-meta">
+            <span><b class="meta-dot"></b> Cross-modal search</span>
+            <span><b class="meta-dot lavender"></b> CLIP embeddings</span>
+            <span><b class="meta-dot coral"></b> Runs locally</span>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-orbit orbit-one"></div>
+          <div class="art-orbit orbit-two"></div>
+          <div class="art-glow"></div>
+          <div class="art-frame frame-back"><div class="frame-sky"></div><div class="frame-hill hill-one"></div><div class="frame-hill hill-two"></div><div class="frame-sun"></div></div>
+          <div class="art-frame frame-front"><div class="frame-cloud"></div><div class="frame-water"></div><div class="frame-reflection"></div><span class="art-caption">FIELD STUDY  /  01</span></div>
+          <div class="art-index">IMAGE<br>TO IDEA</div>
+          <div class="art-crosshair">+</div>
+        </div>
+      </section>
+
+      <section class="search-panel" aria-label="Search your image library">
+        <div class="search-mode-row">
+          <div class="mode-title"><span class="mode-number">01</span><span>Describe a scene</span></div>
+          <span class="mode-hint">Text works best in English</span>
+        </div>
+        <form id="text-search-form" class="text-search">
+          <label class="sr-only" for="query">Describe what you are looking for</label>
+          <span class="search-glyph" aria-hidden="true">⌕</span>
+          <input id="query" type="search" maxlength="512" autocomplete="off" placeholder="Try “a quiet lake beneath snow-covered peaks”…">
+          <button class="search-button" type="submit"><span>Search library</span><b aria-hidden="true">↗</b></button>
+        </form>
+        <div class="prompt-row">
+          <span class="prompt-label">TRY A SEARCH</span>
+          <button class="prompt-chip" data-query="a waterfall in a green forest">waterfall in a forest</button>
+          <button class="prompt-chip" data-query="a colorful bird perched on a branch">colorful bird</button>
+          <button class="prompt-chip" data-query="an old stone church in the mountains">stone architecture</button>
+          <button class="prompt-chip" data-query="a vintage painting of a still life with fruit">painted still life</button>
+        </div>
+        <div class="upload-divider"><span>OR SEARCH BY REFERENCE IMAGE</span></div>
+        <div class="upload-row">
+          <label class="upload-drop" for="image-file" id="drop-zone">
+            <span class="upload-icon" aria-hidden="true">＋</span>
+            <span class="upload-text"><b id="upload-name">Drop an image or browse</b><small>PNG, JPG or WebP · up to 15 MB</small></span>
+            <input id="image-file" type="file" accept="image/png,image/jpeg,image/webp">
+            <span class="upload-preview" id="upload-preview"></span>
+          </label>
+          <button class="outline-button" id="image-search-button" type="button" disabled>Find similar</button>
+          <button class="outline-button add-button" id="ingest-button" type="button" disabled><span>＋</span> Add to library</button>
+        </div>
+        <p class="upload-note" id="upload-note">Reference images are analyzed locally; they are not uploaded to a third-party service.</p>
+      </section>
+
+      <section class="library-section">
+        <div class="library-heading">
+          <div>
+            <div class="eyebrow section-eyebrow"><span class="eyebrow-line"></span> The collection</div>
+            <h2 id="results-title">A small world of images<span class="count-pill" id="count-pill">—</span></h2>
+            <p class="results-note" id="results-note">Browse the sample gallery or search by meaning. Choose any image to discover visual neighbors.</p>
+          </div>
+          <div class="collection-tools">
+            <span class="sort-label"><span class="live-dot"></span><span id="status-label">Connecting to local index</span></span>
+            <select id="result-limit" aria-label="Number of results">
+              <option value="12">12 images</option>
+              <option value="24" selected>24 images</option>
+              <option value="48">48 images</option>
+            </select>
+          </div>
+        </div>
+        <div class="results-status" id="results-status" role="status" aria-live="polite"></div>
+        <div class="image-grid" id="image-grid"></div>
+        <div class="empty-state hidden" id="empty-state">
+          <div class="empty-symbol">⌁</div>
+          <h3>No images yet</h3>
+          <p>Seed the rights-documented sample gallery with <code>uv run image-search seed-demo</code>, or add an image above.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-brand"><span class="brand-mark small"><span></span><span></span><span></span><span></span></span> FRAMEFIND <span>·</span> LOCAL IMAGE SEARCH</div>
+      <div class="footer-right"><span>Research demo · Not a hosted service</span><a href="/docs" target="_blank" rel="noreferrer">Developer API ↗</a></div>
+    </footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

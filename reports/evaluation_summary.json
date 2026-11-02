@@ -1,0 +1,124 @@
+{
+  "model_id": "openai/clip-vit-base-patch32",
+  "gallery_images": 16,
+  "queries": 16,
+  "hit_at_1": 0.9375,
+  "hit_at_5": 1.0,
+  "mrr": 0.96875,
+  "mean_target_rank": 1.0625,
+  "results": [
+    {
+      "query": "snowy mountains mirrored in a blue lake",
+      "target_file": "Mount Shasta, Lake Siskiyou, SW view.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Mount Shasta, Lake Siskiyou, SW view.jpg",
+      "target_cosine": 0.256686
+    },
+    {
+      "query": "a powerful waterfall rushing through a river",
+      "target_file": "Khone Phapheng Falls, Si Phan Don, Laos, widest waterfall in the world.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Khone Phapheng Falls, Si Phan Don, Laos, widest waterfall in the world.jpg",
+      "target_cosine": 0.278244
+    },
+    {
+      "query": "green and purple northern lights above a mountain fjord at night",
+      "target_file": "Aurora borealis above Storfjorden and the Lyngen Alps in moonlight, 2012 March.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Aurora borealis above Storfjorden and the Lyngen Alps in moonlight, 2012 March.jpg",
+      "target_cosine": 0.335343
+    },
+    {
+      "query": "the famous metal tower rising over Paris",
+      "target_file": "Tour Eiffel Wikimedia Commons.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Tour Eiffel Wikimedia Commons.jpg",
+      "target_cosine": 0.310044
+    },
+    {
+      "query": "a white marble mausoleum with an ornate arched entrance",
+      "target_file": "20191204 Taj Mahal Agra 0657 6563 DxO.jpg",
+      "target_rank": 1,
+      "top1_file": "File:20191204 Taj Mahal Agra 0657 6563 DxO.jpg",
+      "target_cosine": 0.300362
+    },
+    {
+      "query": "a small old stone windmill beside a stream in a painted landscape",
+      "target_file": "Jacob van Ruisdael - Evening Landscape- a Windmill by a Stream.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Jacob van Ruisdael - Evening Landscape- a Windmill by a Stream.jpg",
+      "target_cosine": 0.344151
+    },
+    {
+      "query": "a red fox lowering its muzzle to drink from a lake",
+      "target_file": "Red Fox drinking from a lake in Gennevilliers, France.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Red Fox drinking from a lake in Gennevilliers, France.jpg",
+      "target_cosine": 0.360557
+    },
+    {
+      "query": "a blue bird holding an insect in its beak",
+      "target_file": "Common kingfisher (Alcedo atthis ispida) female with dragonfly larva.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Common kingfisher (Alcedo atthis ispida) female with dragonfly larva.jpg",
+      "target_cosine": 0.284751
+    },
+    {
+      "query": "a sea turtle gliding under the ocean surface",
+      "target_file": "Underwater portrait of green turtle.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Underwater portrait of green turtle.jpg",
+      "target_cosine": 0.319165
+    },
+    {
+      "query": "a red panda perched among green branches",
+      "target_file": "Red Panda (24986761703).jpg",
+      "target_rank": 1,
+      "top1_file": "File:Red Panda (24986761703).jpg",
+      "target_cosine": 0.314783
+    },
+    {
+      "query": "a bright yellow sunflower seen up close",
+      "target_file": "Sunflower head 2026 G1.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Sunflower head 2026 G1.jpg",
+      "target_cosine": 0.302694
+    },
+    {
+      "query": "a wild orchid that resembles a small bee",
+      "target_file": "(MHNT) Ophrys apifera - Villeneuve-lès-Bouloc - Flower.jpg",
+      "target_rank": 1,
+      "top1_file": "File:(MHNT) Ophrys apifera - Villeneuve-lès-Bouloc - Flower.jpg",
+      "target_cosine": 0.338465
+    },
+    {
+      "query": "a decorated white porcelain tea pot on display",
+      "target_file": "Chantilly Porcelain Factory (French) - Teapot - 1944.228.1.a - Cleveland Museum of Art.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Chantilly Porcelain Factory (French) - Teapot - 1944.228.1.a - Cleveland Museum of Art.jpg",
+      "target_cosine": 0.323213
+    },
+    {
+      "query": "a colorful assortment of sushi on serving plates",
+      "target_file": "Sushi combination.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Sushi combination.jpg",
+      "target_cosine": 0.336248
+    },
+    {
+      "query": "a fruit arrangement featuring apples, pears, and quince in a painting",
+      "target_file": "Cezanne - Still Life With Quince, Apples, and Pears.jpg",
+      "target_rank": 1,
+      "top1_file": "File:Cezanne - Still Life With Quince, Apples, and Pears.jpg",
+      "target_cosine": 0.311007
+    },
+    {
+      "query": "a stone windmill in a French village",
+      "target_file": "Former windmill, Salasc 01.jpg",
+      "target_rank": 2,
+      "top1_file": "File:Jacob van Ruisdael - Evening Landscape- a Windmill by a Stream.jpg",
+      "target_cosine": 0.266593
+    }
+  ],
+  "evaluation_note": "Small, hand-curated, single-gallery prompt test; targets and paraphrased queries were authored for this demo. Not an independent or representative benchmark."
+}

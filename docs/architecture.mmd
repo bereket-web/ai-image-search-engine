@@ -1,0 +1,12 @@
+flowchart LR
+  B[Browser UI] -->|Text or reference image| A[FastAPI local API]
+  B -->|Image + optional title| A
+  A --> E[CLIP ViT-B/32 image/text encoders]
+  E -->|L2-normalized 512-d vectors| V[(SQLite metadata + float32 vectors)]
+  A -->|Exact dot product = cosine| V
+  V -->|Ranked matches + provenance| A
+  A --> B
+  C[Commons seed command] -->|License recheck + thumbnails| G[Curated local gallery]
+  G --> E
+  U[User uploads] -->|Local-only, git-ignored| E
+  U --> V
