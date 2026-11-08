@@ -24,13 +24,21 @@ DATA_DIR = ROOT / "data"
 UPLOAD_DIR = DATA_DIR / "uploads"
 DEMO_DIR = DATA_DIR / "demo" / "images"
 STATIC_DIR = Path(__file__).resolve().parent / "static"
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+PUBLIC_DEMO = os.getenv("IMAGE_SEARCH_PUBLIC_DEMO", "false").strip().lower() in {"1", "true", "yes", "on"}
+GALLERY_INGEST_ENABLED = not PUBLIC_DEMO and os.getenv("IMAGE_SEARCH_ENABLE_INGEST", "true").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+MAX_UPLOAD_BYTES = int(os.getenv("IMAGE_SEARCH_MAX_UPLOAD_BYTES", "15000000"))
+MAX_IMAGE_PIXELS = int(os.getenv("IMAGE_SEARCH_MAX_PIXELS", "50000000"))
+if GALLERY_INGEST_ENABLED:
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 DEMO_DIR.mkdir(parents=True, exist_ok=True)
 
 DB_PATH = Path(os.getenv("IMAGE_SEARCH_DB", DATA_DIR / "index.sqlite3"))
 MODEL_ID = os.getenv("CLIP_MODEL_ID", "openai/clip-vit-base-patch32")
-MAX_UPLOAD_BYTES = 15_000_000
-MAX_IMAGE_PIXELS = 50_000_000
 
 store = VectorStore(DB_PATH)
 embedder = ClipEmbedder(model_id=MODEL_ID)
@@ -49,7 +57,8 @@ app = FastAPI(
 )
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/demo/images", StaticFiles(directory=DEMO_DIR), name="demo-images")
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+if GALLERY_INGEST_ENABLED:
+    app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 class TextSearchRequest(BaseModel):
@@ -101,6 +110,9 @@ def health() -> dict[str, Any]:
         "model_loaded": embedder._model is not None,
         "device": str(embedder._device) if embedder._model is not None else "not loaded yet",
         "search_mode": "exact cosine similarity over normalized float32 vectors",
+        "public_demo": PUBLIC_DEMO,
+        "gallery_ingest_enabled": GALLERY_INGEST_ENABLED,
+        "max_upload_bytes": MAX_UPLOAD_BYTES,
     }
 
 
@@ -177,6 +189,8 @@ async def ingest_image(
     title: Annotated[str, Form(max_length=160)] = "",
     description: Annotated[str, Form(max_length=1200)] = "",
 ) -> dict[str, Any]:
+    if not GALLERY_INGEST_ENABLED:
+        raise HTTPException(status_code=404, detail="Adding images to the gallery is disabled in this demo")
     payload = await file.read(MAX_UPLOAD_BYTES + 1)
     if len(payload) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail=f"Image exceeds {MAX_UPLOAD_BYTES:,} bytes")

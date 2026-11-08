@@ -11,6 +11,9 @@ const ingestButton = document.querySelector("#ingest-button");
 const limitSelect = document.querySelector("#result-limit");
 let selectedFile = null;
 let toastTimer = null;
+let hostedPublicDemo = false;
+let galleryIngestEnabled = true;
+let maxUploadBytes = 15_000_000;
 
 function showToast(message, type = "") {
   toast.textContent = message;
@@ -23,7 +26,9 @@ function setBusy(busy, message = "") {
   statusLine.classList.toggle("loading", busy);
   statusLine.textContent = message;
   document.querySelectorAll("button[type='submit'], #image-search-button, #ingest-button").forEach((button) => {
-    button.disabled = busy || (button === searchImageButton || button === ingestButton) && !selectedFile;
+    const needsFile = button === searchImageButton || button === ingestButton;
+    const ingestionDisabled = button === ingestButton && !galleryIngestEnabled;
+    button.disabled = busy || (needsFile && !selectedFile) || ingestionDisabled;
   });
 }
 
@@ -131,15 +136,41 @@ async function requestJson(url, options = {}) {
   return data;
 }
 
+async function configureMode() {
+  try {
+    const health = await requestJson("/api/health");
+    hostedPublicDemo = Boolean(health.public_demo);
+    galleryIngestEnabled = Boolean(health.gallery_ingest_enabled);
+    maxUploadBytes = Number(health.max_upload_bytes) || maxUploadBytes;
+    if (!galleryIngestEnabled) {
+      ingestButton.classList.add("hidden");
+      ingestButton.disabled = true;
+    }
+    if (!hostedPublicDemo) return;
+
+    document.querySelector(".brand-local").textContent = "PUBLIC DEMO";
+    const privacyPill = document.querySelector(".privacy-pill");
+    privacyPill.textContent = "Queries sent to this public Space";
+    privacyPill.title = "Text and reference-image searches are processed by the hosted service; do not submit sensitive content.";
+    document.querySelector(".hero-meta span:last-child").textContent = "Hosted on Hugging Face";
+    document.querySelector("#upload-note").textContent = "Reference images are sent to this public Space for inference and are not added to its gallery. Do not upload sensitive content.";
+    document.querySelector("#drop-zone .upload-text small").textContent = `PNG, JPG or WebP · up to ${Math.floor(maxUploadBytes / 1_000_000)} MB · sent for inference`;
+    document.querySelector("#empty-state p").textContent = "Browse the rights-documented Commons sample gallery or search it by meaning.";
+    document.querySelector(".footer-right span").textContent = "Public demo · hosted on Hugging Face Spaces";
+  } catch (_) {
+    // The gallery loader reports connection errors with user-facing context.
+  }
+}
+
 async function loadGallery() {
-  setBusy(true, "Loading local collection…");
+  setBusy(true, hostedPublicDemo ? "Loading the public sample gallery…" : "Loading local collection…");
   try {
     const data = await requestJson(`/api/images?limit=${limitSelect.value}`);
     renderResults(data.results, { title: "A small world of images", note: "Browse the sample gallery or search by meaning. Choose any image to discover visual neighbors." });
-    document.querySelector("#status-label").textContent = `${data.count} locally indexed`;
-    statusLine.textContent = "Collection ready";
+    document.querySelector("#status-label").textContent = hostedPublicDemo ? `${data.count} Commons images` : `${data.count} locally indexed`;
+    statusLine.textContent = hostedPublicDemo ? "Public collection ready" : "Collection ready";
   } catch (error) {
-    statusLine.textContent = "Could not reach local index";
+    statusLine.textContent = hostedPublicDemo ? "Could not reach hosted index" : "Could not reach local index";
     showToast(error.message, "error");
   } finally { setBusy(false); }
 }
@@ -147,7 +178,7 @@ async function loadGallery() {
 async function runTextSearch(query) {
   const clean = query.trim();
   if (!clean) { showToast("Enter a short description to search.", "error"); return; }
-  setBusy(true, "Encoding your description and ranking images…");
+  setBusy(true, hostedPublicDemo ? "Sending text to the hosted encoder…" : "Encoding your description and ranking images…");
   try {
     const data = await requestJson("/api/search/text", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -161,7 +192,7 @@ async function runTextSearch(query) {
 
 async function runImageSearch() {
   if (!selectedFile) return;
-  setBusy(true, "Encoding reference image and finding visual neighbors…");
+  setBusy(true, hostedPublicDemo ? "Sending reference image to the hosted encoder…" : "Encoding reference image and finding visual neighbors…");
   try {
     const body = new FormData();
     body.append("file", selectedFile);
@@ -185,7 +216,7 @@ async function runSimilar(imageId, imageTitle) {
 }
 
 async function ingestSelected() {
-  if (!selectedFile) return;
+  if (!selectedFile || !galleryIngestEnabled) return;
   setBusy(true, "Generating an embedding and adding to your local index…");
   try {
     const body = new FormData();
@@ -203,15 +234,17 @@ function selectFile(file) {
   if (!file) return;
   const allowed = ["image/jpeg", "image/png", "image/webp"];
   if (!allowed.includes(file.type)) { showToast("Choose a PNG, JPEG, or WebP image.", "error"); return; }
-  if (file.size > 15_000_000) { showToast("Choose an image under 15 MB.", "error"); return; }
+  if (file.size > maxUploadBytes) { showToast(`Choose an image under ${Math.floor(maxUploadBytes / 1_000_000)} MB.`, "error"); return; }
   selectedFile = file;
   document.querySelector("#upload-name").textContent = file.name;
   const preview = document.querySelector("#upload-preview");
   preview.style.backgroundImage = `url("${URL.createObjectURL(file)}")`;
   preview.classList.add("show");
   searchImageButton.disabled = false;
-  ingestButton.disabled = false;
-  document.querySelector("#upload-note").textContent = "Ready. Search it without saving, or add it to your local library (rights are not verified).";
+  ingestButton.disabled = !galleryIngestEnabled;
+  document.querySelector("#upload-note").textContent = hostedPublicDemo
+    ? "This image will be sent to the public Space for inference, not added to its gallery. Do not upload sensitive content."
+    : "Ready. Search it without saving, or add it to your local library (rights are not verified).";
 }
 
 document.querySelector("#text-search-form").addEventListener("submit", (event) => {
@@ -237,4 +270,4 @@ const dropZone = document.querySelector("#drop-zone");
 }));
 dropZone.addEventListener("drop", (event) => selectFile(event.dataTransfer.files?.[0]));
 
-loadGallery();
+configureMode().finally(loadGallery);

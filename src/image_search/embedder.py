@@ -12,6 +12,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 DEFAULT_MODEL_ID = "openai/clip-vit-base-patch32"
 DEFAULT_MODEL_REVISION = "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
+MAX_IMAGE_PIXELS = int(os.getenv("IMAGE_SEARCH_MAX_PIXELS", "50000000"))
 
 
 class ClipEmbedder:
@@ -75,8 +76,8 @@ class ClipEmbedder:
                 opened = Image.open(io.BytesIO(image))
             else:
                 opened = Image.open(image)
-            if opened.width * opened.height > 50_000_000:
-                raise ValueError("Images larger than 50 megapixels are not supported")
+            if opened.width * opened.height > MAX_IMAGE_PIXELS:
+                raise ValueError(f"Images larger than {MAX_IMAGE_PIXELS:,} pixels are not supported")
             return ImageOps.exif_transpose(opened).convert("RGB")
         except (UnidentifiedImageError, OSError) as exc:
             raise ValueError("Please provide a valid PNG, JPEG, or WebP image") from exc
