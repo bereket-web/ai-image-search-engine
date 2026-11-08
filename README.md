@@ -30,6 +30,8 @@ uv run image-search serve
 
 Open <http://127.0.0.1:8000>. Keep the service bound to localhost unless you add authentication, access control, upload quotas, rate limits, and deployment-specific privacy/security review. Uploaded images are stored in ignored `data/uploads/`; embeddings and SQLite index are also local generated state.
 
+The page references Google Fonts, so a browser with network access may request font files; prompts, query images, and library contents are not sent to Google. For strict offline use, self-host or replace the font links.
+
 Useful commands:
 
 ```bash
@@ -51,7 +53,7 @@ The default hard cap is **25,000 images**, because this exact-scan design is O(N
 
 ## Evaluation
 
-`reports/evaluation_queries.json` defines 16 manually authored, paraphrased prompt-to-target checks against the same 16-image demo gallery. `uv run image-search evaluate` reports Hit@1, Hit@5, MRR, and each target rank in `reports/evaluation_summary.json`.
+`reports/evaluation_queries.json` defines 16 manually authored, paraphrased prompt-to-target checks against the 16-image demo gallery. Evaluation explicitly restricts ranking to image IDs in `data/demo/assets.json`, so later user uploads cannot change these results. `uv run image-search evaluate` reports Hit@1, Hit@5, MRR, and each target rank in `reports/evaluation_summary.json`.
 
 On that exact curated set, CLIP achieved **Hit@1 15/16 (93.75%)**, **Hit@5 16/16 (100%)**, **MRR 0.9688**, and mean target rank **1.06**. The one top-1 miss was “a stone windmill in a French village”: the historical windmill painting ranked first, while the intended village windmill photo ranked second. These are descriptive results on one deliberately small gallery, not a quality estimate for a broader collection.
 
@@ -59,19 +61,19 @@ On that exact curated set, CLIP achieved **Hit@1 15/16 (93.75%)**, **Hit@5 16/16
 
 ## Model and limitations
 
-The frozen CLIP model is used only as an off-the-shelf encoder; no fine-tuning or project-specific model training occurs. Its model card documents research intent, warns against untested deployment, states that non-English use is not evaluated, and notes known weaknesses such as fine-grained recognition and counting, as well as bias concerns. This project keeps the experiment local and does not present it as an unconstrained production service. Read the [Hugging Face model card](https://huggingface.co/openai/clip-vit-base-patch32) and [upstream OpenAI CLIP repository](https://github.com/openai/CLIP) before reuse.
+The frozen CLIP model is used only as an off-the-shelf encoder; no fine-tuning or project-specific model training occurs. The default checkpoint is pinned to Hub revision [`3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268`](https://huggingface.co/openai/clip-vit-base-patch32/tree/3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268), and the evaluation summary records that revision. Its model card documents research intent, warns against untested deployment, states that non-English use is not evaluated, and notes known weaknesses such as fine-grained recognition and counting, as well as bias concerns. This project keeps the experiment local and does not present it as an unconstrained production service. Read the [Hugging Face model card](https://huggingface.co/openai/clip-vit-base-patch32) and [upstream OpenAI CLIP repository](https://github.com/openai/CLIP) before reuse.
 
 Other limits: exact vector search is linear; uploaded images are not virus-scanned and no user authentication or quotas exist; local sample rights metadata comes from Commons and should be checked at the linked file page; sample thumbnails may be withdrawn or relabeled upstream; no independent licensing audit or face/personality-rights audit is claimed; the project has no public deployment and no production availability/SLA.
 
 ## Data and licenses
 
-The curated sample manifest is `data/demo/catalog.json`; the seed command reads current Wikimedia Commons machine-readable metadata and refuses a file unless its license label is Public domain, CC0, CC BY 2.0–4.0, or CC BY-SA 2.0–4.0 and no reuse restriction/deletion notice is present. Each resulting demo card links to its Commons file page and retains the creator credit, license name/link, file/thumbnail checksums, and curated tags in `data/demo/assets.json`. See [DATA_SOURCES.md](DATA_SOURCES.md) for the detailed attribution and reuse notes. Commons metadata is community-maintained; verify local legal conditions before redistribution. ShareAlike terms still apply to adaptations.
+The curated sample manifest is `data/demo/catalog.json`; the seed command reads current Wikimedia Commons machine-readable metadata and refuses a file unless its license label is Public domain, CC0, CC BY 2.0–4.0, or CC BY-SA 2.0–4.0 and no reuse restriction/deletion notice is present. Each resulting demo card links to its Commons file page and retains the creator credit, license name/link, file/thumbnail checksums, and curated tags in `data/demo/assets.json`. See [DATA_SOURCES.md](DATA_SOURCES.md) and [THIRD_PARTY_ASSETS.md](THIRD_PARTY_ASSETS.md) for attribution and reuse details. Commons metadata is community-maintained; verify local legal conditions before redistribution. ShareAlike terms still apply to adaptations.
 
 User uploads are not checked for copyright or other reuse rights. They remain local, are marked “rights not verified,” and must not be redistributed without permission. This repository's MIT license applies to the original source code only, not to the separately licensed sample images or upstream model artifacts.
 
 ## Project status
 
-Built locally, with the curated demo gallery and evaluation artifacts created only after real CLIP inference succeeds. No GitHub remote, Hugging Face artifact, or public Space is configured for this project. Portfolio publishing remains pending access under the approved `bereket-web` owner; this project is not published under `bereket74`. No project-scoped Hugging Face token has been used.
+The public source repository, code, and rights-documented Commons demo gallery are available at [bereket-web/ai-image-search-engine](https://github.com/bereket-web/ai-image-search-engine). The FastAPI UI remains a local demo, not a hosted service. No project-trained model, dataset, or Hugging Face Space is published; the pinned upstream CLIP weights are downloaded locally and not redistributed.
 
 ## Repository map
 

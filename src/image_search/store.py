@@ -194,6 +194,7 @@ class VectorStore:
         query_embedding: np.ndarray | list[float],
         limit: int = 24,
         exclude_id: str | None = None,
+        include_ids: set[str] | None = None,
     ) -> list[tuple[ImageRecord, float]]:
         query = self._validate_embedding(query_embedding)
         if not 1 <= limit <= 100:
@@ -207,6 +208,8 @@ class VectorStore:
         valid_rows: list[sqlite3.Row] = []
         vectors: list[np.ndarray] = []
         for row in rows:
+            if include_ids is not None and row["id"] not in include_ids:
+                continue
             if exclude_id is not None and row["id"] == exclude_id:
                 continue
             if row["dimension"] != query.size:

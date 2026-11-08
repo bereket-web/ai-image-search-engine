@@ -11,11 +11,17 @@ import numpy as np
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 DEFAULT_MODEL_ID = "openai/clip-vit-base-patch32"
+DEFAULT_MODEL_REVISION = "3d74acf9a28c67741b2f4f2ea7635f0aaf6f0268"
 
 
 class ClipEmbedder:
-    def __init__(self, model_id: str = DEFAULT_MODEL_ID, device: str | None = None):
+    def __init__(self, model_id: str = DEFAULT_MODEL_ID, device: str | None = None, revision: str | None = None):
         self.model_id = model_id
+        self.revision = (
+            revision
+            or os.getenv("CLIP_MODEL_REVISION")
+            or (DEFAULT_MODEL_REVISION if model_id == DEFAULT_MODEL_ID else None)
+        )
         self.device_name = device
         self._model = None
         self._processor = None
@@ -35,8 +41,9 @@ class ClipEmbedder:
         torch.set_num_threads(max(1, int(os.getenv("CLIP_CPU_THREADS", "4"))))
         chosen = self.device_name or ("cuda" if torch.cuda.is_available() else "cpu")
         self._device = torch.device(chosen)
-        self._processor = CLIPProcessor.from_pretrained(self.model_id)
-        self._model = CLIPModel.from_pretrained(self.model_id).to(self._device).eval()
+        load_options = {"revision": self.revision} if self.revision else {}
+        self._processor = CLIPProcessor.from_pretrained(self.model_id, **load_options)
+        self._model = CLIPModel.from_pretrained(self.model_id, **load_options).to(self._device).eval()
         self._torch = torch
 
     @staticmethod

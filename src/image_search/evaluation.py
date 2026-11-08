@@ -22,12 +22,19 @@ def evaluate_queries() -> dict[str, Any]:
     queries = json.loads(QUERIES_PATH.read_text(encoding="utf-8"))
     assets = json.loads(ASSETS_PATH.read_text(encoding="utf-8"))
     targets = {row["file_title"].removeprefix("File:"): row["id"] for row in assets}
+    gallery_ids = set(targets.values())
+    if not gallery_ids:
+        raise ValueError("The curated demo gallery is empty; seed it before evaluation")
     embedder = ClipEmbedder(model_id=os.getenv("CLIP_MODEL_ID", "openai/clip-vit-base-patch32"))
     store = VectorStore(Path(os.getenv("IMAGE_SEARCH_DB", ROOT / "data" / "index.sqlite3")))
     rows: list[dict[str, Any]] = []
     for item in queries:
         expected_id = targets[item["target_file"]]
-        ranking = store.search(embedder.encode_text(item["query"]), limit=min(store.count(), 100))
+        ranking = store.search(
+            embedder.encode_text(item["query"]),
+            limit=min(len(gallery_ids), 100),
+            include_ids=gallery_ids,
+        )
         target_rank = next((rank for rank, (record, _) in enumerate(ranking, 1) if record.id == expected_id), None)
         rows.append(
             {
@@ -43,6 +50,7 @@ def evaluate_queries() -> dict[str, Any]:
     reciprocal = [1.0 / row["target_rank"] if row["target_rank"] else 0.0 for row in rows]
     summary = {
         "model_id": embedder.model_id,
+        "model_revision": embedder.revision,
         "gallery_images": len(assets),
         "queries": len(rows),
         "hit_at_1": float(np.mean([row["target_rank"] == 1 for row in rows])) if rows else 0.0,
